@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Acuity",
+    "slug": "acuity",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#F7E1D7"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.michaelt.acuity"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F7E1D7"
+      },
+      "package": "com.michaelt.acuity"
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-av", { "microphonePermission": false }]
+    ]
+  }
+}
