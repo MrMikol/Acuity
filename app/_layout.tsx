@@ -1,13 +1,12 @@
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, Image } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LightColors } from '../src/theme';
-import { Image } from 'react-native';
+import { useTheme } from '../src/theme';
 
 export default function RootLayout() {
   const router = useRouter();
-  const colors = LightColors;
+  const colors = useTheme();
 
   return (
     <Tabs

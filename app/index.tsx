@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, StatusBar } from 'react-native';
-import { LightColors, Spacing, Radius } from '../src/theme';
+import { View, Text, ScrollView, Pressable, StyleSheet, StatusBar, useColorScheme } from 'react-native';
+import { useTheme, Spacing, Radius, type ColorTheme } from '../src/theme';
 import { CONCEPTS } from '../src/utils/musicTheory';
 
 export default function LearnScreen() {
-  const colors = LightColors;
+  const colors = useTheme();
+  const scheme = useColorScheme();
+  const styles = createStyles(colors);
+
   const [expandedConcept, setExpandedConcept] = useState<string | null>('notes');
 
   return (
@@ -13,7 +16,7 @@ export default function LearnScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
 
       <View
         style={[
@@ -163,122 +166,124 @@ export default function LearnScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing['3xl'],
-  },
-  heroCard: {
-    borderWidth: 1,
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
-    marginBottom: Spacing.xl,
-  },
-  eyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    marginBottom: 8,
-  },
-  tagline: {
-    fontSize: 30,
-    fontWeight: '700',
-    marginBottom: Spacing.sm,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: Spacing.md,
-    paddingLeft: 2,
-  },
-  card: {
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
-    overflow: 'hidden',
-  },
-  cardLocked: {
-    opacity: 0.58,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.lg,
-  },
-  cardLeft: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    flex: 1,
-    gap: Spacing.md,
-  },
-  cardText: {
-    flex: 1,
-  },
-  badge: {
-    width: 30,
-    height: 30,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  badgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  cardDesc: {
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  chevron: {
-    fontSize: 15,
-    marginLeft: Spacing.sm,
-  },
-  lessonsSection: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-  },
-  lessonsDivider: {
-    height: 1,
-    marginBottom: Spacing.md,
-  },
-  lessonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-  },
-  lessonDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-  },
-  lessonTitle: {
-    flex: 1,
-    fontSize: 13,
-  },
-  lessonTimePill: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  lessonMins: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: Spacing.lg,
+      paddingTop: Spacing.xl,
+      paddingBottom: Spacing['3xl'],
+    },
+    heroCard: {
+      borderWidth: 1,
+      borderRadius: Radius.xl,
+      padding: Spacing.xl,
+      marginBottom: Spacing.xl,
+    },
+    eyebrow: {
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 1.2,
+      marginBottom: 8,
+    },
+    tagline: {
+      fontSize: 30,
+      fontWeight: '700',
+      marginBottom: Spacing.sm,
+    },
+    subtitle: {
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: Spacing.md,
+      paddingLeft: 2,
+    },
+    card: {
+      borderRadius: Radius.lg,
+      borderWidth: 1,
+      marginBottom: Spacing.md,
+      overflow: 'hidden',
+    },
+    cardLocked: {
+      opacity: 0.58,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: Spacing.lg,
+    },
+    cardLeft: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      flex: 1,
+      gap: Spacing.md,
+    },
+    cardText: {
+      flex: 1,
+    },
+    badge: {
+      width: 30,
+      height: 30,
+      borderRadius: 999,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    badgeText: {
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    cardTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    cardDesc: {
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    chevron: {
+      fontSize: 15,
+      marginLeft: Spacing.sm,
+    },
+    lessonsSection: {
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.lg,
+    },
+    lessonsDivider: {
+      height: 1,
+      marginBottom: Spacing.md,
+    },
+    lessonRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      paddingVertical: Spacing.sm,
+    },
+    lessonDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
+    },
+    lessonTitle: {
+      flex: 1,
+      fontSize: 13,
+    },
+    lessonTimePill: {
+      borderWidth: 1,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    lessonMins: {
+      fontSize: 11,
+      fontWeight: '600',
+    },
+  });
+}

@@ -17,7 +17,7 @@ import {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Svg, { Path, Circle, Line, Rect, G } from 'react-native-svg';
+import Svg, { Path, Circle, Line, Rect, G, Ellipse } from 'react-native-svg';
 import { LightColors, Spacing, Radius } from '../src/theme';
 
 const { width: W } = Dimensions.get('window');
@@ -65,23 +65,35 @@ function StaffVisual() {
           strokeWidth="1"
         />
       ))}
-      {/* Note heads */}
-      {notes.map((n, i) => (
-        <G key={i}>
-          {/* Stem */}
-          <Line
-            x1={n.x + 9} y1={n.y}
-            x2={n.x + 9} y2={n.y - 28}
-            stroke={n.highlight ? C.sage : C.slate}
-            strokeWidth="1.5"
-          />
-          {/* Head */}
-          <Path
-            d={`M${n.x},${n.y} a9,7 -15 1,0 18,0 a9,7 -15 1,0 -18,0`}
-            fill={n.highlight ? C.sage : C.slate}
-          />
-        </G>
-      ))}
+      {/* Notes */}
+      {notes.map((n, i) => {
+        const noteColor = n.highlight ? C.sage : C.slate;
+
+        return (
+          <G key={i}>
+            {/* Note head */}
+            <Ellipse
+              cx={n.x}
+              cy={n.y}
+              rx={8.5}
+              ry={6.5}
+              fill={noteColor}
+              transform={`rotate(-18 ${n.x} ${n.y})`}
+            />
+
+            {/* Stem attached to right side of note head */}
+            <Line
+              x1={n.x + 7}
+              y1={n.y - 1}
+              x2={n.x + 7}
+              y2={n.y - 28}
+              stroke={noteColor}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </G>
+        );
+      })}
     </Svg>
   );
 }
