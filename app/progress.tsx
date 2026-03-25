@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Colors, Spacing, Radius } from '../src/theme';
+import { LightColors, Spacing, Radius } from '../src/theme';
 import { getAllMastery, getPathProgress } from '../src/store/masteryStore';
 import type { MasteryStore } from '../src/store/masteryStore';
 import { CONCEPTS } from '../src/utils/musicTheory';
@@ -8,6 +8,8 @@ import { CONCEPTS } from '../src/utils/musicTheory';
 export default function ProgressScreen() {
   const [mastery, setMastery] = useState<MasteryStore | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  const colors = LightColors;
 
   const load = useCallback(async () => { setMastery(await getAllMastery()); }, []);
   useEffect(() => { load(); }, []);
@@ -27,7 +29,7 @@ export default function ProgressScreen() {
       <View style={styles.statsRow}>
         <StatCard label="Practice days" value={String(uniqueDays)} />
         <StatCard label="Questions" value={String(totalQ)} />
-        <StatCard label="Accuracy" value={totalQ > 0 ? `${accuracy}%` : '—'} color={accuracy >= 80 ? Colors.sage : undefined} />
+                <StatCard label="Accuracy" value={totalQ > 0 ? `${accuracy}%` : '—'} color={accuracy >= 80 ? colors.sage : undefined} />
       </View>
 
       <Text style={styles.sectionTitle}>Concept mastery</Text>
@@ -40,16 +42,16 @@ export default function ProgressScreen() {
           <View key={concept.id} style={[styles.conceptCard, !cm.unlocked && { opacity: 0.5 }]}>
             <View style={styles.conceptHeader}>
               <Text style={styles.conceptTitle}>{concept.title}</Text>
-              {cm.unlocked
+                            {cm.unlocked
                 ? <View style={styles.unlockedBadge}><Text style={styles.unlockedBadgeText}>Unlocked</Text></View>
-                : <Text style={{ fontSize: 11, color: Colors.textMuted }}>Locked</Text>}
+                : <Text style={{ fontSize: 11, color: colors.textMuted }}>Locked</Text>}
             </View>
             {cm.unlocked && (
               <>
-                <MiniBar label={`Path A (90%)  ${p.pathA.daysQualified}/${p.pathA.daysNeeded} days`} pct={p.pathA.pct} color={Colors.sage} />
-                <MiniBar label={`Path B (80%)  ${p.pathB.daysQualified}/${p.pathB.daysNeeded} days`} pct={p.pathB.pct} color={Colors.slate} />
+                                <MiniBar label={`Path A (90%)  ${p.pathA.daysQualified}/${p.pathA.daysNeeded} days`} pct={p.pathA.pct} color={colors.sage} />
+                <MiniBar label={`Path B (80%)  ${p.pathB.daysQualified}/${p.pathB.daysNeeded} days`} pct={p.pathB.pct} color={colors.slate} />
                 {cm.sessions.length > 0 && (
-                  <Text style={{ fontSize: 11, color: Colors.textMuted, marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>
                     Last practice: {cm.sessions[cm.sessions.length - 1].date}{'  '}{Math.round(cm.sessions[cm.sessions.length - 1].accuracy * 100)}%
                   </Text>
                 )}
@@ -82,8 +84,8 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 function MiniBar({ label, pct, color }: { label: string; pct: number; color: string }) {
   return (
     <View style={{ gap: 3, marginBottom: 4 }}>
-      <Text style={{ fontSize: 11, color: Colors.textSecondary }}>{label}</Text>
-      <View style={{ height: 5, backgroundColor: Colors.warmGray, borderRadius: 99, overflow: 'hidden' }}>
+      <Text style={{ fontSize: 11, color: LightColors.textSecondary }}>{label}</Text>
+      <View style={{ height: 5, backgroundColor: LightColors.warmGray, borderRadius: 99, overflow: 'hidden' }}>
         <View style={{ height: '100%', width: `${pct * 100}%`, backgroundColor: color, borderRadius: 99 }} />
       </View>
     </View>
@@ -91,19 +93,81 @@ function MiniBar({ label, pct, color }: { label: string; pct: number; color: str
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.cream },
+  root: { flex: 1, backgroundColor: LightColors.surface },
   content: { padding: Spacing.lg },
   statsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.xl, marginTop: Spacing.sm },
-  statCard: { flex: 1, backgroundColor: Colors.warmGray, borderRadius: Radius.md, padding: Spacing.md, alignItems: 'center' },
-  statValue: { fontSize: 24, fontWeight: '700', color: Colors.slate, marginBottom: 2 },
-  statLabel: { fontSize: 11, color: Colors.textSecondary, textAlign: 'center' },
-  sectionTitle: { fontSize: 11, fontWeight: '600', color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: Spacing.md },
-  conceptCard: { backgroundColor: Colors.white, borderRadius: Radius.lg, borderWidth: 0.5, borderColor: Colors.warmGray, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.sm },
-  conceptHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xs },
-  conceptTitle: { fontSize: 15, fontWeight: '600', color: Colors.text },
-  unlockedBadge: { backgroundColor: Colors.sageLight, paddingHorizontal: Spacing.sm, paddingVertical: 3, borderRadius: 99 },
-  unlockedBadgeText: { fontSize: 11, color: Colors.sageDark, fontWeight: '600' },
-  explainer: { backgroundColor: Colors.warmGray, borderRadius: Radius.lg, padding: Spacing.lg, marginTop: Spacing.sm },
-  explainerTitle: { fontSize: 13, fontWeight: '600', color: Colors.text, marginBottom: Spacing.sm },
-  explainerText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 20 },
+  statCard: {
+    flex: 1,
+    backgroundColor: LightColors.warmGrayLight,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: LightColors.slate,
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: LightColors.textSecondary,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: LightColors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: Spacing.md,
+  },
+  conceptCard: {
+    backgroundColor: LightColors.white,
+    borderRadius: Radius.lg,
+    borderWidth: 0.5,
+    borderColor: LightColors.warmGray,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  conceptHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  conceptTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: LightColors.text,
+  },
+  unlockedBadge: {
+    backgroundColor: LightColors.sageLight,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: 99,
+  },
+  unlockedBadgeText: {
+    fontSize: 11,
+    color: LightColors.sageDark,
+    fontWeight: '600',
+  },
+  explainer: {
+    backgroundColor: LightColors.warmGrayLight,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    marginTop: Spacing.sm,
+  },
+  explainerTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: LightColors.text,
+    marginBottom: Spacing.sm,
+  },
+  explainerText: {
+    fontSize: 13,
+    color: LightColors.textSecondary,
+    lineHeight: 20,
+  },
 });

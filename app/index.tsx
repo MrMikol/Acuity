@@ -1,66 +1,122 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, StatusBar } from 'react-native';
-import { Colors, Spacing, Radius, Typography } from '../src/theme';
+import { LightColors, Spacing, Radius } from '../src/theme';
 import { CONCEPTS } from '../src/utils/musicTheory';
-import { getAllMastery, getPathProgress } from '../src/store/masteryStore';
-import type { MasteryStore } from '../src/store/masteryStore';
 
 export default function LearnScreen() {
-  const [mastery, setMastery] = useState<MasteryStore | null>(null);
+  const colors = LightColors;
   const [expandedConcept, setExpandedConcept] = useState<string | null>('notes');
 
-  useEffect(() => {
-    getAllMastery().then(setMastery);
-  }, []);
-
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.root, { backgroundColor: colors.surface }]}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
       <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <Text style={styles.tagline}>Sharpen your musical ear.</Text>
-        <Text style={styles.subtitle}>Master 5 concepts through daily practice. Each concept unlocks the next.</Text>
+
+      <View
+        style={[
+          styles.heroCard,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.eyebrow, { color: colors.sage }]}>ACUITY</Text>
+        <Text style={[styles.tagline, { color: colors.text }]}>
+          Sharpen your musical ear.
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Build listening skill through short daily sessions and unlock each concept over time.
+        </Text>
       </View>
 
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Learn concepts</Text>
+
       {CONCEPTS.map((concept, idx) => {
-        const isUnlocked = mastery?.concepts[concept.id].unlocked ?? idx === 0;
+        const isUnlocked = idx === 0;
         const isExpanded = expandedConcept === concept.id;
-        const m = mastery?.concepts[concept.id];
-        const lastAccuracy = m?.sessions?.length
-          ? m.sessions[m.sessions.length - 1].accuracy
-          : null;
 
         return (
           <Pressable
             key={concept.id}
-            style={[styles.card, !isUnlocked && styles.cardLocked, isExpanded && styles.cardExpanded]}
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.surface,
+                borderColor: isExpanded && isUnlocked ? colors.slate : colors.border,
+              },
+              !isUnlocked && styles.cardLocked,
+            ]}
             onPress={() => isUnlocked && setExpandedConcept(isExpanded ? null : concept.id)}
             disabled={!isUnlocked}
           >
             <View style={styles.cardHeader}>
               <View style={styles.cardLeft}>
-                <View style={[styles.badge, isUnlocked ? styles.badgeUnlocked : styles.badgeLocked]}>
-                  <Text style={[styles.badgeText, !isUnlocked && styles.badgeTextLocked]}>{idx + 1}</Text>
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      backgroundColor: isUnlocked ? colors.slate : colors.surfaceAlt,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      {
+                        color: isUnlocked ? colors.textOnSlate : colors.textMuted,
+                      },
+                    ]}
+                  >
+                    {idx + 1}
+                  </Text>
                 </View>
+
                 <View style={styles.cardText}>
-                  <Text style={[styles.cardTitle, !isUnlocked && styles.textLocked]}>{concept.title}</Text>
-                  <Text style={[styles.cardDesc, !isUnlocked && styles.textLocked]}>
-                    {isUnlocked ? concept.description : 'Locked — complete previous concept'}
+                  <Text
+                    style={[
+                      styles.cardTitle,
+                      { color: isUnlocked ? colors.text : colors.textMuted },
+                    ]}
+                  >
+                    {concept.title}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.cardDesc,
+                      { color: isUnlocked ? colors.textSecondary : colors.textMuted },
+                    ]}
+                  >
+                    {isUnlocked
+                      ? concept.description
+                      : 'Locked — complete previous concept'}
                   </Text>
                 </View>
               </View>
-              <View style={styles.cardRight}>
-                {isUnlocked && lastAccuracy !== null && (
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: lastAccuracy >= 0.8 ? Colors.sage : Colors.blush }}>
-                    {Math.round(lastAccuracy * 100)}%
-                  </Text>
-                )}
-                <Text style={styles.chevron}>{!isUnlocked ? '🔒' : isExpanded ? '∧' : '∨'}</Text>
-              </View>
+
+              <Text style={[styles.chevron, { color: colors.textMuted }]}>
+                {!isUnlocked ? '🔒' : isExpanded ? '∧' : '∨'}
+              </Text>
             </View>
 
             {isExpanded && isUnlocked && (
-              <View style={styles.lessonsSection}>
-                <View style={styles.lessonsDivider} />
+              <View
+                style={[
+                  styles.lessonsSection,
+                  { backgroundColor: colors.surfaceAlt },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.lessonsDivider,
+                    { backgroundColor: colors.border },
+                  ]}
+                />
+
                 {[
                   'What is a note?',
                   'White and black keys',
@@ -69,77 +125,160 @@ export default function LearnScreen() {
                   'Your first exercise',
                 ].map((title, li) => (
                   <View key={li} style={styles.lessonRow}>
-                    <View style={styles.lessonDot} />
-                    <Text style={styles.lessonTitle}>Lesson {li + 1} — {title}</Text>
-                    <Text style={styles.lessonMins}>3 min</Text>
+                    <View
+                      style={[
+                        styles.lessonDot,
+                        { backgroundColor: colors.sage },
+                      ]}
+                    />
+                    <Text style={[styles.lessonTitle, { color: colors.text }]}>
+                      Lesson {li + 1} — {title}
+                    </Text>
+                    <View
+                      style={[
+                        styles.lessonTimePill,
+                        {
+                          backgroundColor: colors.background,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.lessonMins,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        3 min
+                      </Text>
+                    </View>
                   </View>
                 ))}
-                {m && (
-                  <View style={styles.masterySection}>
-                    <Text style={styles.masterySectionTitle}>Mastery progress</Text>
-                    {(() => {
-                      const p = getPathProgress(m.sessions);
-                      return (
-                        <>
-                          <PathBar label="Path A (90%)" current={p.pathA.daysQualified} goal={p.pathA.daysNeeded} pct={p.pathA.pct} color={Colors.sage} />
-                          <PathBar label="Path B (80%)" current={p.pathB.daysQualified} goal={p.pathB.daysNeeded} pct={p.pathB.pct} color={Colors.slate} />
-                        </>
-                      );
-                    })()}
-                  </View>
-                )}
               </View>
             )}
           </Pressable>
         );
       })}
-      <View style={{ height: Spacing['2xl'] }} />
     </ScrollView>
   );
 }
 
-function PathBar({ label, current, goal, pct, color }: { label: string; current: number; goal: number; pct: number; color: string }) {
-  return (
-    <View style={{ gap: 3, marginBottom: 6 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 11, color: Colors.textSecondary }}>{label}</Text>
-        <Text style={{ fontSize: 11, fontWeight: '600', color }}>{current}/{goal} days</Text>
-      </View>
-      <View style={{ height: 5, backgroundColor: Colors.warmGray, borderRadius: 99, overflow: 'hidden' }}>
-        <View style={{ height: '100%', width: `${pct * 100}%`, backgroundColor: color, borderRadius: 99 }} />
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.cream },
-  content: { padding: Spacing.lg },
-  header: { marginBottom: Spacing.xl, paddingTop: Spacing.sm },
-  tagline: { fontSize: 30, fontWeight: '700', color: Colors.slate, marginBottom: Spacing.xs },
-  subtitle: { fontSize: 13, color: Colors.textSecondary, lineHeight: 20 },
-  card: { backgroundColor: Colors.white, borderRadius: Radius.lg, borderWidth: 0.5, borderColor: Colors.warmGray, marginBottom: Spacing.md, overflow: 'hidden' },
-  cardExpanded: { borderColor: Colors.slate, borderWidth: 1 },
-  cardLocked: { opacity: 0.5 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.lg },
-  cardLeft: { flexDirection: 'row', alignItems: 'flex-start', flex: 1, gap: Spacing.md },
-  cardRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  cardText: { flex: 1 },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.text, marginBottom: 2 },
-  cardDesc: { fontSize: 13, color: Colors.textSecondary },
-  textLocked: { color: Colors.textMuted },
-  badge: { width: 28, height: 28, borderRadius: 99, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 },
-  badgeUnlocked: { backgroundColor: Colors.slate },
-  badgeLocked: { backgroundColor: Colors.warmGray },
-  badgeText: { fontSize: 13, fontWeight: '700', color: Colors.cream },
-  badgeTextLocked: { color: Colors.textMuted },
-  chevron: { fontSize: 14, color: Colors.textMuted },
-  lessonsSection: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
-  lessonsDivider: { height: 0.5, backgroundColor: Colors.warmGray, marginBottom: Spacing.md },
-  lessonRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.sm, gap: Spacing.sm },
-  lessonDot: { width: 6, height: 6, borderRadius: 99, backgroundColor: Colors.sage, flexShrink: 0 },
-  lessonTitle: { flex: 1, fontSize: 13, color: Colors.text },
-  lessonMins: { fontSize: 11, color: Colors.textMuted },
-  masterySection: { marginTop: Spacing.lg, padding: Spacing.md, backgroundColor: Colors.warmGrayLight, borderRadius: Radius.md },
-  masterySectionTitle: { fontSize: 11, fontWeight: '600', color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: Spacing.sm },
+  root: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing['3xl'],
+  },
+  heroCard: {
+    borderWidth: 1,
+    borderRadius: Radius.xl,
+    padding: Spacing.xl,
+    marginBottom: Spacing.xl,
+  },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 8,
+  },
+  tagline: {
+    fontSize: 30,
+    fontWeight: '700',
+    marginBottom: Spacing.sm,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: Spacing.md,
+    paddingLeft: 2,
+  },
+  card: {
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+    overflow: 'hidden',
+  },
+  cardLocked: {
+    opacity: 0.58,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.lg,
+  },
+  cardLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+    gap: Spacing.md,
+  },
+  cardText: {
+    flex: 1,
+  },
+  badge: {
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  badgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  cardDesc: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  chevron: {
+    fontSize: 15,
+    marginLeft: Spacing.sm,
+  },
+  lessonsSection: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+  },
+  lessonsDivider: {
+    height: 1,
+    marginBottom: Spacing.md,
+  },
+  lessonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+  },
+  lessonDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+  },
+  lessonTitle: {
+    flex: 1,
+    fontSize: 13,
+  },
+  lessonTimePill: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  lessonMins: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
 });
