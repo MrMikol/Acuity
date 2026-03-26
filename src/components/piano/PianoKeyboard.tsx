@@ -33,12 +33,13 @@ const OCTAVE_PATTERN = [
 ];
 
 // Black key horizontal offset within each white key pair (fraction of white key width)
+// 1.0 means "at the far edge of the current white key".
 const BLACK_KEY_OFFSETS: Record<number, number> = {
-  1:  0.6,  // C# sits 60% into C's width
-  3:  0.6,  // D# sits 60% into D's width
-  6:  0.6,  // F#
-  8:  0.6,  // G#
-  10: 0.6,  // A#
+  1: 1.0,  // C#
+  3: 1.0,  // D#
+  6: 1.0,  // F#
+  8: 1.0,  // G#
+  10: 1.0, // A#
 };
 
 interface KeyInfo {
@@ -126,10 +127,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       {/* Black keys — absolute overlay */}
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {blackKeys.map((key) => {
-          const semitone = key.midi % 12;
-          const offset = BLACK_KEY_OFFSETS[semitone] ?? 0.6;
-          // Position: left edge of the white key it belongs to + offset
-          const leftX = padding + key.whiteIndex * whiteKeyW + whiteKeyW * offset - blackKeyW / 2;
+          const leftX = padding + key.whiteIndex * whiteKeyW + whiteKeyW - blackKeyW / 2;
 
           return (
             <Pressable

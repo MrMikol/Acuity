@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useTheme, Spacing, Radius, type ColorTheme } from '../src/theme';
-import { getAllMastery } from '../src/store/masteryStore';
+import { getAllMastery, recordSession } from '../src/store/masteryStore';
 import IntervalExercise from '../src/components/exercises/IntervalExercise';
 
 type PracticeView = 'menu' | 'interval_exercise';
@@ -14,15 +14,19 @@ export default function PracticeScreen() {
   const colors = useTheme();
   const styles = createStyles(colors);
 
-  useEffect(() => {
-    getAllMastery().then((m) => {
-      setUnlockedConcepts(
-        Object.values(m.concepts)
-          .filter((c) => c.unlocked)
-          .map((c) => c.conceptId)
-      );
-    });
+  const loadUnlockedConcepts = useCallback(async () => {
+    const mastery = await getAllMastery();
+
+    setUnlockedConcepts(
+      Object.values(mastery.concepts)
+        .filter((c) => c.unlocked)
+        .map((c) => c.conceptId)
+    );
   }, []);
+
+  useEffect(() => {
+    loadUnlockedConcepts();
+  }, [loadUnlockedConcepts]);
 
   if (view === 'interval_exercise') {
     return (
@@ -33,16 +37,28 @@ export default function PracticeScreen() {
 
         <IntervalExercise
           useBasicOnly={!unlockedConcepts.includes('all_intervals')}
-          onSessionComplete={(correct, total) => {
+          onSessionComplete={async (correct, total) => {
+            const conceptId = unlockedConcepts.includes('all_intervals')
+              ? 'all_intervals'
+              : 'basic_intervals';
+
+            await recordSession(conceptId, correct, total);
+            await loadUnlockedConcepts();
+
             setLastResult({ correct, total });
-            setView('menu');
+
+            // ❌ REMOVE auto navigation
+            // setView('menu');
           }}
         />
       </View>
     );
   }
 
-  const percent = lastResult ? Math.round((lastResult.correct / lastResult.total) * 100) : 0;
+  const percent = lastResult && lastResult.total > 0
+    ? Math.round((lastResult.correct / lastResult.total) * 100)
+    : 0;
+
   const passed = lastResult ? lastResult.correct / lastResult.total >= 0.8 : false;
 
   return (

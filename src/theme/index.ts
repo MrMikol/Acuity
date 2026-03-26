@@ -1,7 +1,7 @@
 /**
  * Acuity Design Tokens — light + dark mode
  *
- * Use `useTheme()` in components instead of importing LightColors directly.
+ * Use `useTheme()` in components instead of importing Colors directly.
  */
 
 import { useColorScheme } from 'react-native';
@@ -9,7 +9,6 @@ import { useColorScheme } from 'react-native';
 // ─── Base palette ──────────────────────────────────────────────────────────────
 
 const palette = {
-  // Brand
   slate: '#4A5759',
   slateDark: '#3A4446',
   slateLight: '#5C6D6F',
@@ -30,63 +29,8 @@ const palette = {
   blushLight: '#F7D5DA',
 } as const;
 
-// ─── Light theme ───────────────────────────────────────────────────────────────
+// ─── Type ─────────────────────────────────────────────────────────────────────
 
-export const LightColors: ColorTheme = {
-  ...palette,
-
-  // Semantics
-  background: '#F7E1D7',
-  surface: '#FFFFFF',
-  surfaceAlt: '#EDEAE3',
-  border: '#DEDBD2',
-  borderStrong: '#C8C5BC',
-
-  text: '#2A2E2F',
-  textSecondary: '#5A6264',
-  textMuted: '#8A9496',
-  textOnSlate: '#F0D8CE',
-
-  // Status
-  correct: '#B0C4B1',
-  wrong: '#EDAFB8',
-  correctText: '#3A5C3B',
-  wrongText: '#7A3040',
-
-  // Compatibility helpers
-  white: '#FFFFFF',
-  black: '#000000',
-} as const;
-
-// ─── Dark theme ────────────────────────────────────────────────────────────────
-
-export const DarkColors: ColorTheme = {
-  ...palette,
-
-  // Same palette feel, adapted for dark mode
-  background: '#1A1612',
-  surface: '#242018',
-  surfaceAlt: '#2E2A24',
-  border: '#3A3530',
-  borderStrong: '#4A4540',
-
-  text: '#EDE0D4',
-  textSecondary: '#A89888',
-  textMuted: '#8A9496',
-  textOnSlate: '#F7E1D7',
-
-  // Status
-  correct: '#6A9E6B',
-  wrong: '#C47A85',
-  correctText: '#B0D4B1',
-  wrongText: '#F0B0BC',
-
-  // Compatibility helpers
-  white: '#FFFFFF',
-  black: '#000000',
-} as const;
-
-// Keep type simple and compatible with both themes
 export type ColorTheme = {
   slate: string;
   slateDark: string;
@@ -125,6 +69,56 @@ export type ColorTheme = {
 
   white: string;
   black: string;
+};
+
+// ─── Light theme ───────────────────────────────────────────────────────────────
+
+export const LightColors: ColorTheme = {
+  ...palette,
+
+  background: '#F7E1D7',
+  surface: '#FFFFFF',
+  surfaceAlt: '#EDEAE3',
+  border: '#DEDBD2',
+  borderStrong: '#C8C5BC',
+
+  text: '#2A2E2F',
+  textSecondary: '#5A6264',
+  textMuted: '#8A9496',
+  textOnSlate: '#F0D8CE',
+
+  correct: '#B0C4B1',
+  wrong: '#EDAFB8',
+  correctText: '#3A5C3B',
+  wrongText: '#7A3040',
+
+  white: '#FFFFFF',
+  black: '#000000',
+};
+
+// ─── Dark theme ────────────────────────────────────────────────────────────────
+
+export const DarkColors: ColorTheme = {
+  ...palette,
+
+  background: '#1A1612',
+  surface: '#242018',
+  surfaceAlt: '#2E2A24',
+  border: '#3A3530',
+  borderStrong: '#4A4540',
+
+  text: '#EDE0D4',
+  textSecondary: '#A89888',
+  textMuted: '#8A9496',
+  textOnSlate: '#F7E1D7',
+
+  correct: '#6A9E6B',
+  wrong: '#C47A85',
+  correctText: '#B0D4B1',
+  wrongText: '#F0B0BC',
+
+  white: '#FFFFFF',
+  black: '#000000',
 };
 
 // ─── Hook ──────────────────────────────────────────────────────────────────────
@@ -175,19 +169,7 @@ export const Radius = {
   full: 9999,
 } as const;
 
-// Legacy export — keep this so older files don't immediately break
-export const Colors = {
-  slate: '#4A5759',
-  cream: '#F7E1D7',
-  warmGray: '#DEDBD2',
-  warmGrayLight: '#EDEAE3',
-  sage: '#B0C4B1',
-  blush: '#EDAFB8',
+// ─── Legacy export (FIXED) ─────────────────────────────────────────────────────
 
-  text: '#2A2E2F',
-  textSecondary: '#5A6264',
-  textMuted: '#8A9496',
-
-  white: '#FFFFFF',
-  black: '#000000',
-} as const;
+// This makes ALL old files work without errors
+export const Colors: ColorTheme = LightColors;

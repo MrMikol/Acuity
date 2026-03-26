@@ -27,8 +27,10 @@ export interface MasteryStore {
 
 const STORAGE_KEY = '@acuity/mastery_v1';
 const ROLLING_WINDOW_DAYS = 60;
+
 const PATH_A_ACCURACY = 0.9;
 const PATH_A_DAYS = 5;
+
 const PATH_B_ACCURACY = 0.8;
 const PATH_B_DAYS = 10;
 
@@ -53,6 +55,10 @@ export function todayString(): string {
   return new Date().toISOString().split('T')[0];
 }
 
+function parseDateOnly(dateStr: string): Date {
+  return new Date(`${dateStr}T00:00:00`);
+}
+
 function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
@@ -60,23 +66,34 @@ function daysAgo(n: number): string {
 }
 
 function isWithinWindow(dateStr: string): boolean {
-  return dateStr >= daysAgo(ROLLING_WINDOW_DAYS);
+  const sessionDate = parseDateOnly(dateStr);
+  const cutoffDate = parseDateOnly(daysAgo(ROLLING_WINDOW_DAYS));
+  return sessionDate >= cutoffDate;
 }
 
 function dateDiffInDays(a: string, b: string): number {
-  const aDate = new Date(`${a}T00:00:00`);
-  const bDate = new Date(`${b}T00:00:00`);
+  const aDate = parseDateOnly(a);
+  const bDate = parseDateOnly(b);
   const diffMs = Math.abs(bDate.getTime() - aDate.getTime());
   return Math.round(diffMs / 86400000);
+}
+
+// ─── Qualification helpers ────────────────────────────────────────────────────
+
+function getQualifiedRecentSessions(
+  sessions: DaySession[],
+  accuracyThreshold: number
+): DaySession[] {
+  return sessions
+    .filter((s) => isWithinWindow(s.date) && s.accuracy >= accuracyThreshold)
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 function getNonConsecutiveQualifiedCount(
   sessions: DaySession[],
   accuracyThreshold: number
 ): number {
-  const recent = sessions
-    .filter((s) => isWithinWindow(s.date) && s.accuracy >= accuracyThreshold)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  const recent = getQualifiedRecentSessions(sessions, accuracyThreshold);
 
   let count = 0;
   let lastAcceptedDate: string | null = null;
@@ -148,12 +165,14 @@ export function getPathProgress(sessions: DaySession[]): PathProgress {
 function defaultStore(): MasteryStore {
   const concepts = {} as Record<ConceptId, ConceptMastery>;
 
-  ALL_CONCEPTS.forEach((id, idx) => {
+  ALL_CONCEPTS.forEach((id) => {
+    const isInitiallyUnlocked = id === 'notes' || id === 'basic_intervals';
+
     concepts[id] = {
       conceptId: id,
       sessions: [],
-      unlocked: idx === 0,
-      unlockedAt: idx === 0 ? new Date().toISOString() : null,
+      unlocked: isInitiallyUnlocked,
+      unlockedAt: isInitiallyUnlocked ? new Date().toISOString() : null,
       unlockedBy: null,
     };
   });
@@ -177,7 +196,17 @@ function normalizeStore(rawStore: MasteryStore | null | undefined): MasteryStore
     if (incoming) {
       base.concepts[id] = {
         conceptId: id,
-        sessions: Array.isArray(incoming.sessions) ? incoming.sessions : [],
+        sessions: Array.isArray(incoming.sessions)
+          ? incoming.sessions
+              .filter(
+                (s) =>
+                  typeof s?.date === 'string' &&
+                  typeof s?.accuracy === 'number' &&
+                  typeof s?.questionCount === 'number' &&
+                  typeof s?.correctCount === 'number'
+              )
+              .sort((a, b) => a.date.localeCompare(b.date))
+          : [],
         unlocked: Boolean(incoming.unlocked),
         unlockedAt: incoming.unlockedAt ?? null,
         unlockedBy: incoming.unlockedBy ?? null,
@@ -218,37 +247,45 @@ export async function recordSession(
   const store = await loadStore();
   const concept = store.concepts[conceptId];
   const today = todayString();
-  const accuracy = questionCount > 0 ? correctCount / questionCount : 0;
+
+  const safeCorrect = Math.max(0, correctCount);
+  const safeQuestions = Math.max(0, questionCount);
 
   const existingIndex = concept.sessions.findIndex((s) => s.date === today);
-  const session: DaySession = {
-    date: today,
-    accuracy,
-    questionCount,
-    correctCount,
-  };
 
   if (existingIndex >= 0) {
-    concept.sessions[existingIndex] = session;
+    const existing = concept.sessions[existingIndex];
+    const mergedCorrect = existing.correctCount + safeCorrect;
+    const mergedQuestions = existing.questionCount + safeQuestions;
+
+    concept.sessions[existingIndex] = {
+      date: today,
+      correctCount: mergedCorrect,
+      questionCount: mergedQuestions,
+      accuracy: mergedQuestions > 0 ? mergedCorrect / mergedQuestions : 0,
+    };
   } else {
-    concept.sessions.push(session);
+    concept.sessions.push({
+      date: today,
+      correctCount: safeCorrect,
+      questionCount: safeQuestions,
+      accuracy: safeQuestions > 0 ? safeCorrect / safeQuestions : 0,
+    });
   }
 
   concept.sessions = concept.sessions
     .filter((s) => isWithinWindow(s.date))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const previousUnlocked = concept.unlocked;
-  const previousUnlockedBy = concept.unlockedBy;
-
+  const wasUnlocked = concept.unlocked;
   const { unlocked, path } = evaluateMastery(concept.sessions);
 
   let masteryChanged = false;
   let unlockedPath: 'path_a' | 'path_b' | null = null;
 
-  if (unlocked && (!previousUnlockedBy || previousUnlocked !== true)) {
+  if (!wasUnlocked && unlocked && path) {
     concept.unlocked = true;
-    concept.unlockedAt = concept.unlockedAt ?? new Date().toISOString();
+    concept.unlockedAt = new Date().toISOString();
     concept.unlockedBy = path;
     masteryChanged = true;
     unlockedPath = path;
@@ -259,8 +296,9 @@ export async function recordSession(
       store.concepts[next].unlockedAt = new Date().toISOString();
       store.concepts[next].unlockedBy = null;
     }
-  } else {
-    concept.unlocked = concept.unlocked || conceptId === 'notes';
+  } else if (conceptId === 'notes') {
+    concept.unlocked = true;
+    concept.unlockedAt = concept.unlockedAt ?? new Date().toISOString();
   }
 
   await saveStore(store);
@@ -281,6 +319,18 @@ export async function getAllMastery(): Promise<MasteryStore> {
 export async function isConceptUnlocked(conceptId: ConceptId): Promise<boolean> {
   const store = await loadStore();
   return store.concepts[conceptId].unlocked;
+}
+
+export async function getUnlockedConceptIds(): Promise<ConceptId[]> {
+  const store = await loadStore();
+  return ALL_CONCEPTS.filter((id) => store.concepts[id].unlocked);
+}
+
+export async function getConceptPathProgress(
+  conceptId: ConceptId
+): Promise<PathProgress> {
+  const store = await loadStore();
+  return getPathProgress(store.concepts[conceptId].sessions);
 }
 
 export async function __devResetMastery(): Promise<void> {
