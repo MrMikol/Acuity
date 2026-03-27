@@ -4,73 +4,47 @@
  * A reusable interactive piano keyboard spanning a configurable range.
  * Shows white and black keys. Highlights pressed keys.
  * Fires onNotePress(midiNote) callback.
- *
- * Default range: C3–C6 (37 keys) — good for ear training.
- * Compact mode: C4–C5 (13 keys) — for simpler exercises.
  */
 
-import React, { useCallback } from 'react';
-import { View, Pressable, StyleSheet, Dimensions } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Colors } from '../../theme';
-
-const SCREEN_W = Dimensions.get('window').width;
-
-// ─── Key geometry ─────────────────────────────────────────────────────────────
-
-const OCTAVE_PATTERN = [
-  { semitone: 0,  isBlack: false }, // C
-  { semitone: 1,  isBlack: true  }, // C#
-  { semitone: 2,  isBlack: false }, // D
-  { semitone: 3,  isBlack: true  }, // D#
-  { semitone: 4,  isBlack: false }, // E
-  { semitone: 5,  isBlack: false }, // F
-  { semitone: 6,  isBlack: true  }, // F#
-  { semitone: 7,  isBlack: false }, // G
-  { semitone: 8,  isBlack: true  }, // G#
-  { semitone: 9,  isBlack: false }, // A
-  { semitone: 10, isBlack: true  }, // A#
-  { semitone: 11, isBlack: false }, // B
-];
-
-// Black key horizontal offset within each white key pair (fraction of white key width)
-// 1.0 means "at the far edge of the current white key".
-const BLACK_KEY_OFFSETS: Record<number, number> = {
-  1: 1.0,  // C#
-  3: 1.0,  // D#
-  6: 1.0,  // F#
-  8: 1.0,  // G#
-  10: 1.0, // A#
-};
 
 interface KeyInfo {
   midi: number;
   isBlack: boolean;
-  whiteIndex: number; // position among white keys
+  whiteIndex: number;
 }
 
 function buildKeys(startMidi: number, endMidi: number): KeyInfo[] {
   const keys: KeyInfo[] = [];
   let whiteIndex = 0;
+
   for (let midi = startMidi; midi <= endMidi; midi++) {
     const semitone = midi % 12;
     const isBlack = [1, 3, 6, 8, 10].includes(semitone);
-    keys.push({ midi, isBlack, whiteIndex: isBlack ? whiteIndex - 1 : whiteIndex });
+
+    keys.push({
+      midi,
+      isBlack,
+      whiteIndex: isBlack ? whiteIndex - 1 : whiteIndex,
+    });
+
     if (!isBlack) whiteIndex++;
   }
+
   return keys;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 interface PianoKeyboardProps {
-  startMidi?: number;  // default 48 = C3
-  endMidi?: number;    // default 84 = C6
+  startMidi?: number;
+  endMidi?: number;
   pressedMidi?: Set<number>;
-  highlightedMidi?: Set<number>; // shown in sage green (answer reveal)
-  wrongMidi?: Set<number>;       // shown in blush (wrong answer)
+  highlightedMidi?: Set<number>;
+  wrongMidi?: Set<number>;
   onNotePress: (midi: number) => void;
   disabled?: boolean;
-  height?: number;     // total keyboard height (default 120)
+  height?: number;
 }
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
@@ -83,70 +57,86 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   disabled = false,
   height = 120,
 }) => {
+  const [containerWidth, setContainerWidth] = useState(0);
+
   const keys = buildKeys(startMidi, endMidi);
   const whiteKeys = keys.filter((k) => !k.isBlack);
   const blackKeys = keys.filter((k) => k.isBlack);
 
   const padding = 12;
-  const totalWidth = SCREEN_W - padding * 2;
-  const whiteKeyW = totalWidth / whiteKeys.length;
-  const blackKeyW = whiteKeyW * 0.6;
+  const usableWidth = Math.max(containerWidth - padding * 2, 0);
+  const whiteKeyW = whiteKeys.length > 0 ? usableWidth / whiteKeys.length : 0;
+  const blackKeyW = whiteKeyW * 0.62;
   const blackKeyH = height * 0.58;
 
   const keyColor = useCallback(
     (key: KeyInfo): string => {
       if (highlightedMidi.has(key.midi)) return Colors.sage;
       if (wrongMidi.has(key.midi)) return Colors.blush;
-      if (pressedMidi.has(key.midi)) return Colors.slateLight;
+
+      if (pressedMidi.has(key.midi)) {
+        return key.isBlack ? Colors.cream : Colors.slateLight;
+      }
+
       return key.isBlack ? Colors.slate : Colors.white;
     },
     [pressedMidi, highlightedMidi, wrongMidi]
   );
 
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    setContainerWidth(event.nativeEvent.layout.width);
+  }, []);
+
   return (
-    <View style={[styles.keyboard, { height, paddingHorizontal: padding }]}>
-      {/* White keys */}
-      <View style={[styles.whiteRow, { height }]}>
-        {whiteKeys.map((key, i) => (
-          <Pressable
-            key={key.midi}
-            onPress={() => !disabled && onNotePress(key.midi)}
-            style={({ pressed }) => [
-              styles.whiteKey,
-              {
-                width: whiteKeyW - 2,
-                height,
-                backgroundColor: keyColor(key),
-                opacity: pressed && !disabled ? 0.75 : 1,
-              },
-            ]}
-          />
-        ))}
-      </View>
+    <View
+      style={[styles.keyboard, { height, paddingHorizontal: padding }]}
+      onLayout={handleLayout}
+    >
+      {containerWidth > 0 && (
+        <>
+          <View style={[styles.whiteRow, { height }]}>
+            {whiteKeys.map((key) => (
+              <Pressable
+                key={key.midi}
+                onPress={() => !disabled && onNotePress(key.midi)}
+                style={({ pressed }) => [
+                  styles.whiteKey,
+                  {
+                    width: whiteKeyW,
+                    height,
+                    backgroundColor: keyColor(key),
+                    opacity: pressed && !disabled ? 0.75 : 1,
+                  },
+                ]}
+              />
+            ))}
+          </View>
 
-      {/* Black keys — absolute overlay */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-        {blackKeys.map((key) => {
-          const leftX = padding + key.whiteIndex * whiteKeyW + whiteKeyW - blackKeyW / 2;
+          <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            {blackKeys.map((key) => {
+              const leftX =
+                padding + key.whiteIndex * whiteKeyW + whiteKeyW - blackKeyW / 2;
 
-          return (
-            <Pressable
-              key={key.midi}
-              onPress={() => !disabled && onNotePress(key.midi)}
-              style={({ pressed }) => [
-                styles.blackKey,
-                {
-                  left: leftX,
-                  width: blackKeyW,
-                  height: blackKeyH,
-                  backgroundColor: keyColor(key),
-                  opacity: pressed && !disabled ? 0.7 : 1,
-                },
-              ]}
-            />
-          );
-        })}
-      </View>
+              return (
+                <Pressable
+                  key={key.midi}
+                  onPress={() => !disabled && onNotePress(key.midi)}
+                  style={({ pressed }) => [
+                    styles.blackKey,
+                    {
+                      left: leftX,
+                      width: blackKeyW,
+                      height: blackKeyH,
+                      backgroundColor: keyColor(key),
+                      opacity: pressed && !disabled ? 0.7 : 1,
+                    },
+                  ]}
+                />
+              );
+            })}
+          </View>
+        </>
+      )}
     </View>
   );
 };
@@ -159,13 +149,11 @@ const styles = StyleSheet.create({
   whiteRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    gap: 2,
   },
   whiteKey: {
     borderRadius: 4,
     borderWidth: 0.5,
     borderColor: Colors.warmGray,
-    // bottom rounded corners only (like a real piano key)
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
   },

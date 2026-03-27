@@ -12,13 +12,13 @@ function buildSampleSources(): Partial<Record<number, AVPlaybackSource>> {
   // sources[42] = require('../../assets/samples/salamander/Gb2.mp3');
   // sources[45] = require('../../assets/samples/salamander/A2.mp3');
   sources[48] = require('../../assets/samples/salamander/C3.mp3');
-  // sources[51] = require('../../assets/samples/salamander/Eb3.mp3');
-  // sources[54] = require('../../assets/samples/salamander/Gb3.mp3');
-  // sources[57] = require('../../assets/samples/salamander/A3.mp3');
+  sources[51] = require('../../assets/samples/salamander/Eb3.mp3');
+  sources[54] = require('../../assets/samples/salamander/Gb3.mp3');
+  sources[57] = require('../../assets/samples/salamander/A3.mp3');
   sources[60] = require('../../assets/samples/salamander/C4.mp3');
-  // sources[63] = require('../../assets/samples/salamander/Eb4.mp3');
-  // sources[66] = require('../../assets/samples/salamander/Gb4.mp3');
-  // sources[69] = require('../../assets/samples/salamander/A4.mp3');
+  sources[63] = require('../../assets/samples/salamander/Eb4.mp3');
+  sources[66] = require('../../assets/samples/salamander/Gb4.mp3');
+  sources[69] = require('../../assets/samples/salamander/A4.mp3');
   sources[72] = require('../../assets/samples/salamander/C5.mp3');
   // sources[75] = require('../../assets/samples/salamander/Eb5.mp3');
   // sources[78] = require('../../assets/samples/salamander/Gb5.mp3');
@@ -72,12 +72,12 @@ async function playSource(
     }
 
     const { sound } = await Audio.Sound.createAsync(source, {
-      shouldPlay: true,
+      shouldPlay: false,
       volume,
-      rate,
-      shouldCorrectPitch: true,
-      pitchCorrectionQuality: Audio.PitchCorrectionQuality.High,
     });
+
+    await sound.setRateAsync(rate, false);
+    await sound.playAsync();
 
     soundPool.push(sound);
 

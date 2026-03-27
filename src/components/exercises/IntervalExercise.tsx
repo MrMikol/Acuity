@@ -41,9 +41,17 @@ function pickRandom<T>(arr: T[]): T {
 
 function buildQuestion(useBasicOnly: boolean): Question {
   const pool = useBasicOnly ? BASIC_INTERVALS : INTERVALS;
+  const interval = pickRandom(pool);
+
+  const KEYBOARD_START = 48; // C3
+  const KEYBOARD_END = 72;   // C5
+  const maxRootMidi = KEYBOARD_END - interval.semitones;
+
   return {
-    interval: pickRandom(pool),
-    rootMidi: 48 + Math.floor(Math.random() * 24),
+    interval,
+    rootMidi:
+      KEYBOARD_START +
+      Math.floor(Math.random() * (maxRootMidi - KEYBOARD_START + 1)),
   };
 }
 
@@ -165,6 +173,7 @@ export const IntervalExercise: React.FC<IntervalExerciseProps> = ({
   }
 
   const topMidi = question.rootMidi + question.interval.semitones;
+
   const highlightedKeys =
     answerState.startsWith('answered')
       ? new Set([question.rootMidi, topMidi])
@@ -172,7 +181,7 @@ export const IntervalExercise: React.FC<IntervalExerciseProps> = ({
 
   const wrongKeys =
     answerState === 'answered_wrong' && selectedInterval
-      ? new Set([question.rootMidi, question.rootMidi + selectedInterval.semitones])
+      ? new Set([question.rootMidi + selectedInterval.semitones])
       : new Set<number>();
 
   return (
@@ -221,7 +230,7 @@ export const IntervalExercise: React.FC<IntervalExerciseProps> = ({
           startMidi={48}
           endMidi={72}
           pressedMidi={pressedKeys}
-          highlightedMidi={answerState === 'answered_correct' ? highlightedKeys : new Set()}
+          highlightedMidi={answerState.startsWith('answered') ? highlightedKeys : new Set()}
           wrongMidi={answerState === 'answered_wrong' ? wrongKeys : new Set()}
           onNotePress={() => {}}
           disabled
