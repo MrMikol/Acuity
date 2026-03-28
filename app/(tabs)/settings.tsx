@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, Switch } from 'react-native';
 import Constants from 'expo-constants';
-import { LightColors, Spacing, Radius } from '../src/theme';
+import { LightColors, Spacing, Radius } from '../../src/theme';
 
 export default function SettingsScreen() {
   const colors = LightColors;

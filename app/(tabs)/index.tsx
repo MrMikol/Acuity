@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, StatusBar, useColorScheme } from 'react-native';
-import { useTheme, Spacing, Radius, type ColorTheme } from '../src/theme';
-import { CONCEPTS } from '../src/utils/musicTheory';
+import { useRouter } from 'expo-router';
+import { useTheme, Spacing, Radius, type ColorTheme } from '../../src/theme';
+import { CONCEPTS } from '../../src/utils/musicTheory';
+import { NOTE_LESSONS } from '../../src/data/noteLessons';
 
 export default function LearnScreen() {
   const colors = useTheme();
   const scheme = useColorScheme();
   const styles = createStyles(colors);
+  const router = useRouter();
 
   const [expandedConcept, setExpandedConcept] = useState<string | null>('notes');
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 
   return (
     <ScrollView
@@ -41,6 +45,7 @@ export default function LearnScreen() {
       {CONCEPTS.map((concept, idx) => {
         const isUnlocked = idx === 0;
         const isExpanded = expandedConcept === concept.id;
+        const lessons = concept.id === 'notes' ? NOTE_LESSONS : [];
 
         return (
           <Pressable
@@ -120,43 +125,63 @@ export default function LearnScreen() {
                   ]}
                 />
 
-                {[
-                  'What is a note?',
-                  'White and black keys',
-                  'What is an octave?',
-                  'Training your ear',
-                  'Your first exercise',
-                ].map((title, li) => (
-                  <View key={li} style={styles.lessonRow}>
-                    <View
-                      style={[
-                        styles.lessonDot,
-                        { backgroundColor: colors.sage },
-                      ]}
-                    />
-                    <Text style={[styles.lessonTitle, { color: colors.text }]}>
-                      Lesson {li + 1} — {title}
-                    </Text>
-                    <View
-                      style={[
-                        styles.lessonTimePill,
+                {lessons.map((lesson, li) => {
+                  const isSelected = selectedLesson === lesson.id;
+                  return (
+                    <Pressable
+                      key={lesson.id}
+                      style={({ pressed }) => [
+                        styles.lessonRow,
                         {
-                          backgroundColor: colors.background,
-                          borderColor: colors.border,
+                          backgroundColor: pressed || isSelected
+                            ? `${colors.slate}10`
+                            : 'transparent',
+                          borderRadius: Radius.md,
+                          marginHorizontal: -Spacing.sm,
+                          paddingHorizontal: Spacing.sm,
                         },
                       ]}
+                      onPress={() => {
+                        setSelectedLesson(lesson.id);
+                        router.push(`/learn/${lesson.id}`);
+                      }}
                     >
+                      <View
+                        style={[
+                          styles.lessonDot,
+                          { backgroundColor: isSelected ? colors.slate : colors.sage },
+                        ]}
+                      />
                       <Text
                         style={[
-                          styles.lessonMins,
-                          { color: colors.textSecondary },
+                          styles.lessonTitle,
+                          { color: isSelected ? colors.slate : colors.text,
+                            fontWeight: isSelected ? '600' : '400' },
                         ]}
                       >
-                        3 min
+                        Lesson {li + 1} — {lesson.title}
                       </Text>
-                    </View>
-                  </View>
-                ))}
+                      <View
+                        style={[
+                          styles.lessonTimePill,
+                          {
+                            backgroundColor: isSelected ? `${colors.slate}15` : colors.background,
+                            borderColor: isSelected ? colors.slate : colors.border,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.lessonMins,
+                            { color: isSelected ? colors.slate : colors.textSecondary },
+                          ]}
+                        >
+                          {lesson.duration}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
               </View>
             )}
           </Pressable>

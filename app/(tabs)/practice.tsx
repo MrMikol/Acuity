@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
-import { useTheme, Spacing, Radius, type ColorTheme } from '../src/theme';
-import { getAllMastery, recordSession } from '../src/store/masteryStore';
-import IntervalExercise from '../src/components/exercises/IntervalExercise';
+import { useTheme, Spacing, Radius, type ColorTheme } from '../../src/theme';
+import { getAllMastery, recordSession } from '../../src/store/masteryStore';
+import IntervalExercise from '../../src/components/exercises/IntervalExercise';
+import NoteExercise from '../../src/components/exercises/NoteExercise';
 
-type PracticeView = 'menu' | 'interval_exercise';
+type PracticeView = 'menu' | 'note_exercise' | 'interval_exercise';
 
 export default function PracticeScreen() {
   const [view, setView] = useState<PracticeView>('menu');
@@ -28,6 +29,28 @@ export default function PracticeScreen() {
     loadUnlockedConcepts();
   }, [loadUnlockedConcepts]);
 
+  // ── Note Exercise ────────────────────────────────────────────────────────────
+
+  if (view === 'note_exercise') {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface }}>
+        <Pressable onPress={() => setView('menu')} style={{ padding: Spacing.lg, paddingBottom: 0 }}>
+          <Text style={{ fontSize: 13, color: colors.slate, fontWeight: '500' }}>← Back</Text>
+        </Pressable>
+
+        <NoteExercise
+          onSessionComplete={async (correct, total) => {
+            await recordSession('notes', correct, total);
+            await loadUnlockedConcepts();
+            setLastResult({ correct, total });
+          }}
+        />
+      </View>
+    );
+  }
+
+  // ── Interval Exercise ────────────────────────────────────────────────────────
+
   if (view === 'interval_exercise') {
     return (
       <View style={{ flex: 1, backgroundColor: colors.surface }}>
@@ -44,16 +67,14 @@ export default function PracticeScreen() {
 
             await recordSession(conceptId, correct, total);
             await loadUnlockedConcepts();
-
             setLastResult({ correct, total });
-
-            // ❌ REMOVE auto navigation
-            // setView('menu');
           }}
         />
       </View>
     );
   }
+
+  // ── Menu ─────────────────────────────────────────────────────────────────────
 
   const percent = lastResult && lastResult.total > 0
     ? Math.round((lastResult.correct / lastResult.total) * 100)
@@ -85,18 +106,22 @@ export default function PracticeScreen() {
 
       <Text style={styles.sectionTitle}>Available exercises</Text>
 
+      {/* Note Recognition */}
       {unlockedConcepts.includes('notes') && (
-        <View style={[styles.card, { opacity: 0.6 }]}>
+        <View style={styles.card}>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>Note recognition</Text>
-            <Text style={styles.cardDesc}>Hear a single note and identify it on the keyboard.</Text>
+            <Text style={styles.cardDesc}>
+              See a note on the staff, hear it play, then name it.
+            </Text>
           </View>
-          <View style={styles.comingSoonBadge}>
-            <Text style={styles.comingSoonText}>Phase 2</Text>
-          </View>
+          <Pressable style={styles.startBtn} onPress={() => setView('note_exercise')}>
+            <Text style={styles.startBtnText}>Start</Text>
+          </Pressable>
         </View>
       )}
 
+      {/* Interval Identification */}
       {unlockedConcepts.includes('basic_intervals') ? (
         <>
           <View style={styles.card}>
@@ -116,7 +141,9 @@ export default function PracticeScreen() {
       ) : (
         <View style={styles.lockedSection}>
           <Text style={styles.lockedTitle}>More exercises unlock as you progress</Text>
-          <Text style={styles.lockedDesc}>Complete Note Recognition to unlock Interval Identification.</Text>
+          <Text style={styles.lockedDesc}>
+            Complete Note Recognition to unlock Interval Identification.
+          </Text>
         </View>
       )}
     </ScrollView>
@@ -183,19 +210,6 @@ function createStyles(colors: ColorTheme) {
       color: colors.textOnSlate,
       fontSize: 13,
       fontWeight: '600',
-    },
-    comingSoonBadge: {
-      backgroundColor: colors.surfaceAlt,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.xs,
-      borderRadius: Radius.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    comingSoonText: {
-      fontSize: 11,
-      color: colors.textMuted,
-      fontWeight: '500',
     },
     lockedSection: {
       padding: Spacing.xl,

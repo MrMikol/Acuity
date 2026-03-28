@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { useTheme, Spacing, Radius, type ColorTheme } from '../src/theme';
-import { getAllMastery, getPathProgress } from '../src/store/masteryStore';
-import type { MasteryStore } from '../src/store/masteryStore';
-import { CONCEPTS } from '../src/utils/musicTheory';
+import { useTheme, Spacing, Radius, type ColorTheme } from '../../src/theme';
+import { getAllMastery, getPathProgress } from '../../src/store/masteryStore';
+import type { MasteryStore } from '../../src/store/masteryStore';
+import { CONCEPTS } from '../../src/utils/musicTheory';
 
 export default function ProgressScreen() {
   const [mastery, setMastery] = useState<MasteryStore | null>(null);

@@ -18,7 +18,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path, Circle, Line, Rect, G, Ellipse } from 'react-native-svg';
-import { LightColors, Spacing, Radius } from '../src/theme';
+import { LightColors, Spacing, Radius } from '../../src/theme';
 
 const { width: W } = Dimensions.get('window');
 const ONBOARDING_KEY = '@acuity/onboarding_complete';
