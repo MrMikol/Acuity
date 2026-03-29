@@ -10,9 +10,12 @@ export interface LessonPage {
   eyebrow?: string;
   heading: string;
   body: string;
-  visual?: 'keyboard' | 'waveform' | 'octave' | 'ear' | 'exercise';
-  ctaLabel?: string;   // only for type === 'cta'
-  ctaRoute?: string;   // only for type === 'cta'
+  visual?: 'keyboard' | 'waveform' | 'octave' | 'ear' | 'exercise'
+        | 'interval_intro' | 'half_steps' | 'seconds' | 'thirds'
+        | 'fourths_fifths' | 'interval_exercise' | 'interval_map'
+        | 'sixths' | 'sevenths' | 'tritone';
+  ctaLabel?: string;
+  ctaRoute?: string;
 }
 
 export interface Lesson {

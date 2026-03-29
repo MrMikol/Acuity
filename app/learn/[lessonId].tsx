@@ -19,8 +19,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, Spacing, Radius, Typography, type ColorTheme } from '../../src/theme';
 import { NOTE_LESSONS, type LessonPage } from '../../src/data/noteLessons';
+import { BASIC_INTERVAL_LESSONS, ALL_INTERVAL_LESSONS } from '../../src/data/intervalLessons';
 import Svg, {
   Circle,
+  Ellipse,
   Line,
   Path,
   Rect,
@@ -213,6 +215,219 @@ function ExerciseVisual({ color, accentColor }: { color: string; accentColor: st
   );
 }
 
+// ─── Interval Visuals ─────────────────────────────────────────────────────────
+
+function IntervalIntroVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  // Two notes connected by an arc showing "distance"
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {/* Left note */}
+      <Ellipse cx={100} cy={70} rx={14} ry={10} fill={accentColor} opacity={0.85} />
+      <Line x1={114} y1={70} x2={114} y2={30} stroke={accentColor} strokeWidth={2} opacity={0.85} />
+      {/* Right note */}
+      <Ellipse cx={220} cy={50} rx={14} ry={10} fill={color} opacity={0.5} />
+      <Line x1={234} y1={50} x2={234} y2={10} stroke={color} strokeWidth={2} opacity={0.5} />
+      {/* Arc showing distance */}
+      <Path d="M 114 55 Q 160 20 220 40" stroke={accentColor} strokeWidth={1.5} fill="none" strokeDasharray="4 3" opacity={0.6} />
+      {/* Distance label */}
+      <SvgText x={162} y={28} fontSize={11} fontWeight="600" fill={accentColor} textAnchor="middle" opacity={0.8}>interval</SvgText>
+    </Svg>
+  );
+}
+
+function HalfStepsVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  // Piano keys highlighting half steps and whole steps
+  const whites = [0, 1, 2, 3, 4, 5, 6];
+  const keyW = 28; const keyH = 70; const gap = 3;
+  const totalW = whites.length * (keyW + gap) - gap;
+  const startX = (320 - totalW) / 2;
+  const blackPos = [0.6, 1.6, 3.6, 4.6, 5.6];
+
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {whites.map((_, i) => (
+        <Rect key={i} x={startX + i * (keyW + gap)} y={20} width={keyW} height={keyH}
+          rx={3} fill={i === 0 || i === 1 ? accentColor : color}
+          opacity={i === 0 || i === 1 ? 0.7 : 0.12} />
+      ))}
+      {blackPos.map((pos, i) => (
+        <Rect key={i} x={startX + pos * (keyW + gap) - 8} y={20} width={16} height={keyH * 0.58}
+          rx={2} fill={color} opacity={0.65} />
+      ))}
+      {/* Half step bracket */}
+      <Path d={`M ${startX + keyW} 10 L ${startX + keyW} 5 L ${startX + keyW + gap + keyW} 5 L ${startX + keyW + gap + keyW} 10`}
+        stroke={accentColor} strokeWidth={1.5} fill="none" opacity={0.8} />
+      <SvgText x={startX + keyW + (keyW + gap) / 2} y={4} fontSize={9} fontWeight="700"
+        fill={accentColor} textAnchor="middle" opacity={0.9}>½ step</SvgText>
+    </Svg>
+  );
+}
+
+function SecondsVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {/* m2 */}
+      <SvgText x={80} y={30} fontSize={10} fontWeight="700" fill={accentColor} textAnchor="middle" opacity={0.7}>m2 — 1 half step</SvgText>
+      <Circle cx={55} cy={70} r={18} fill={accentColor} opacity={0.2} stroke={accentColor} strokeWidth={1.5} />
+      <Circle cx={105} cy={70} r={18} fill={accentColor} opacity={0.6} stroke={accentColor} strokeWidth={1.5} />
+      <SvgText x={55} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">E</SvgText>
+      <SvgText x={105} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">F</SvgText>
+      {/* M2 */}
+      <SvgText x={240} y={30} fontSize={10} fontWeight="700" fill={color} textAnchor="middle" opacity={0.6}>M2 — 2 half steps</SvgText>
+      <Circle cx={210} cy={70} r={18} fill={color} opacity={0.1} stroke={color} strokeWidth={1.5} />
+      <Circle cx={270} cy={70} r={18} fill={color} opacity={0.35} stroke={color} strokeWidth={1.5} />
+      <SvgText x={210} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={270} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">D</SvgText>
+    </Svg>
+  );
+}
+
+function ThirdsVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {/* M3 */}
+      <SvgText x={80} y={22} fontSize={10} fontWeight="700" fill={accentColor} textAnchor="middle" opacity={0.8}>M3 — 4 half steps</SvgText>
+      <Circle cx={45} cy={70} r={18} fill={accentColor} opacity={0.2} stroke={accentColor} strokeWidth={1.5} />
+      <Circle cx={115} cy={70} r={18} fill={accentColor} opacity={0.7} stroke={accentColor} strokeWidth={1.5} />
+      <SvgText x={45} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={115} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">E</SvgText>
+      <SvgText x={80} y={98} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>bright, happy</SvgText>
+      {/* m3 */}
+      <SvgText x={240} y={22} fontSize={10} fontWeight="700" fill={color} textAnchor="middle" opacity={0.6}>m3 — 3 half steps</SvgText>
+      <Circle cx={205} cy={70} r={18} fill={color} opacity={0.1} stroke={color} strokeWidth={1.5} />
+      <Circle cx={275} cy={70} r={18} fill={color} opacity={0.4} stroke={color} strokeWidth={1.5} />
+      <SvgText x={205} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">A</SvgText>
+      <SvgText x={275} y={74} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={240} y={98} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>dark, tender</SvgText>
+    </Svg>
+  );
+}
+
+function FourthsFifthsVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {/* P4 */}
+      <SvgText x={80} y={22} fontSize={10} fontWeight="700" fill={accentColor} textAnchor="middle" opacity={0.8}>P4 — 5 half steps</SvgText>
+      <Circle cx={40} cy={68} r={20} fill={accentColor} opacity={0.15} stroke={accentColor} strokeWidth={2} />
+      <Circle cx={120} cy={68} r={20} fill={accentColor} opacity={0.65} stroke={accentColor} strokeWidth={2} />
+      <SvgText x={40} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={120} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">F</SvgText>
+      <SvgText x={80} y={100} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>strong, grounded</SvgText>
+      {/* P5 */}
+      <SvgText x={240} y={22} fontSize={10} fontWeight="700" fill={color} textAnchor="middle" opacity={0.6}>P5 — 7 half steps</SvgText>
+      <Circle cx={200} cy={68} r={20} fill={color} opacity={0.08} stroke={color} strokeWidth={2} />
+      <Circle cx={280} cy={68} r={20} fill={color} opacity={0.45} stroke={color} strokeWidth={2} />
+      <SvgText x={200} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={280} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">G</SvgText>
+      <SvgText x={240} y={100} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>noble, resonant</SvgText>
+    </Svg>
+  );
+}
+
+function IntervalMapVisual({ color, accentColor, blushColor }: { color: string; accentColor: string; blushColor: string }) {
+  const intervals = ['m2','M2','m3','M3','P4','TT','P5','m6','M6','m7','M7','P8'];
+  const total = intervals.length;
+  const barW = (280) / total;
+  const startX = 20;
+
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {intervals.map((name, i) => {
+        const isKnown = i < 6;
+        const isTritone = name === 'TT';
+        const h = 20 + (i / total) * 50;
+        return (
+          <G key={name}>
+            <Rect x={startX + i * barW + 1} y={90 - h} width={barW - 2} height={h}
+              rx={2}
+              fill={isTritone ? blushColor : isKnown ? accentColor : color}
+              opacity={isKnown ? 0.7 : 0.3} />
+            <SvgText x={startX + i * barW + barW / 2} y={105} fontSize={7} fontWeight="600"
+              fill={color} textAnchor="middle" opacity={0.7}>{name}</SvgText>
+          </G>
+        );
+      })}
+    </Svg>
+  );
+}
+
+function SixthsVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      <SvgText x={80} y={22} fontSize={10} fontWeight="700" fill={accentColor} textAnchor="middle" opacity={0.8}>M6 — 9 half steps</SvgText>
+      <Circle cx={35} cy={68} r={20} fill={accentColor} opacity={0.15} stroke={accentColor} strokeWidth={2} />
+      <Circle cx={125} cy={68} r={20} fill={accentColor} opacity={0.65} stroke={accentColor} strokeWidth={2} />
+      <SvgText x={35} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={125} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">A</SvgText>
+      <SvgText x={80} y={100} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>warm, nostalgic</SvgText>
+      <SvgText x={240} y={22} fontSize={10} fontWeight="700" fill={color} textAnchor="middle" opacity={0.6}>m6 — 8 half steps</SvgText>
+      <Circle cx={200} cy={68} r={20} fill={color} opacity={0.08} stroke={color} strokeWidth={2} />
+      <Circle cx={280} cy={68} r={20} fill={color} opacity={0.4} stroke={color} strokeWidth={2} />
+      <SvgText x={200} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={280} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">A♭</SvgText>
+      <SvgText x={240} y={100} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>bittersweet</SvgText>
+    </Svg>
+  );
+}
+
+function SeventhsVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      <SvgText x={80} y={22} fontSize={10} fontWeight="700" fill={accentColor} textAnchor="middle" opacity={0.8}>m7 — 10 half steps</SvgText>
+      <Circle cx={35} cy={68} r={20} fill={accentColor} opacity={0.15} stroke={accentColor} strokeWidth={2} />
+      <Circle cx={125} cy={68} r={20} fill={accentColor} opacity={0.65} stroke={accentColor} strokeWidth={2} />
+      <SvgText x={35} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={125} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">B♭</SvgText>
+      <SvgText x={80} y={100} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>bluesy tension</SvgText>
+      <SvgText x={240} y={22} fontSize={10} fontWeight="700" fill={color} textAnchor="middle" opacity={0.6}>M7 — 11 half steps</SvgText>
+      <Circle cx={200} cy={68} r={20} fill={color} opacity={0.08} stroke={color} strokeWidth={2} />
+      <Circle cx={280} cy={68} r={20} fill={color} opacity={0.4} stroke={color} strokeWidth={2} />
+      <SvgText x={200} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">C</SvgText>
+      <SvgText x={280} y={73} fontSize={12} fontWeight="700" fill={color} textAnchor="middle">B</SvgText>
+      <SvgText x={240} y={100} fontSize={9} fill={color} textAnchor="middle" opacity={0.5}>lush, suspended</SvgText>
+    </Svg>
+  );
+}
+
+function TritoneVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  // Show it as the exact midpoint of the octave
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      {/* Octave bar */}
+      <Line x1={40} y1={55} x2={280} y2={55} stroke={color} strokeWidth={2} opacity={0.2} />
+      <Circle cx={40} cy={55} r={14} fill={color} opacity={0.3} stroke={color} strokeWidth={1.5} />
+      <Circle cx={280} cy={55} r={14} fill={color} opacity={0.3} stroke={color} strokeWidth={1.5} />
+      <SvgText x={40} y={59} fontSize={11} fontWeight="700" fill={color} textAnchor="middle" opacity={0.8}>C</SvgText>
+      <SvgText x={280} y={59} fontSize={11} fontWeight="700" fill={color} textAnchor="middle" opacity={0.8}>C</SvgText>
+      {/* Midpoint — tritone */}
+      <Circle cx={160} cy={55} r={18} fill={accentColor} opacity={0.7} stroke={accentColor} strokeWidth={2} />
+      <SvgText x={160} y={59} fontSize={11} fontWeight="700" fill={color} textAnchor="middle">F♯</SvgText>
+      <SvgText x={160} y={90} fontSize={10} fontWeight="600" fill={accentColor} textAnchor="middle" opacity={0.9}>6 half steps</SvgText>
+      <SvgText x={160} y={20} fontSize={9} fill={color} textAnchor="middle" opacity={0.6}>exact midpoint of the octave</SvgText>
+    </Svg>
+  );
+}
+
+function IntervalExerciseVisual({ color, accentColor }: { color: string; accentColor: string }) {
+  const labels = ['m2','M2','m3','M3','P4','P5'];
+  const btnW = 40; const gap = 5;
+  const totalW = labels.length * (btnW + gap) - gap;
+  const startX = (320 - totalW) / 2;
+  return (
+    <Svg width={320} height={110} viewBox="0 0 320 110">
+      <SvgText x={160} y={35} fontSize={28} fontWeight="700" fill={accentColor} textAnchor="middle" opacity={0.5}>?</SvgText>
+      {labels.map((l, i) => (
+        <G key={l}>
+          <Rect x={startX + i * (btnW + gap)} y={48} width={btnW} height={32} rx={6}
+            fill={i === 3 ? accentColor : color} opacity={i === 3 ? 0.25 : 0.1} />
+          <SvgText x={startX + i * (btnW + gap) + btnW / 2} y={69} fontSize={10} fontWeight="700"
+            fill={i === 3 ? accentColor : color} textAnchor="middle" opacity={i === 3 ? 0.9 : 0.5}>{l}</SvgText>
+        </G>
+      ))}
+    </Svg>
+  );
+}
+
 function LessonVisual({
   visual,
   colors,
@@ -224,12 +439,22 @@ function LessonVisual({
   const props = { color: colors.slate, accentColor: colors.sage };
 
   switch (visual) {
-    case 'waveform': return <WaveformVisual color={colors.slate} />;
-    case 'keyboard': return <KeyboardVisual {...props} />;
-    case 'octave':   return <OctaveVisual {...props} />;
-    case 'ear':      return <EarVisual {...props} />;
-    case 'exercise': return <ExerciseVisual {...props} />;
-    default:         return null;
+    case 'waveform':        return <WaveformVisual color={colors.slate} />;
+    case 'keyboard':        return <KeyboardVisual {...props} />;
+    case 'octave':          return <OctaveVisual {...props} />;
+    case 'ear':             return <EarVisual {...props} />;
+    case 'exercise':        return <ExerciseVisual {...props} />;
+    case 'interval_intro':  return <IntervalIntroVisual {...props} />;
+    case 'half_steps':      return <HalfStepsVisual {...props} />;
+    case 'seconds':         return <SecondsVisual {...props} />;
+    case 'thirds':          return <ThirdsVisual {...props} />;
+    case 'fourths_fifths':  return <FourthsFifthsVisual {...props} />;
+    case 'interval_exercise': return <IntervalExerciseVisual {...props} />;
+    case 'interval_map':    return <IntervalMapVisual color={colors.slate} accentColor={colors.sage} blushColor={colors.blush} />;
+    case 'sixths':          return <SixthsVisual {...props} />;
+    case 'sevenths':        return <SeventhsVisual {...props} />;
+    case 'tritone':         return <TritoneVisual {...props} />;
+    default:                return null;
   }
 }
 
@@ -297,7 +522,8 @@ export default function LessonScreen() {
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors);
 
-  const lesson = NOTE_LESSONS.find((l) => l.id === lessonId);
+  const ALL_LESSONS = [...NOTE_LESSONS, ...BASIC_INTERVAL_LESSONS, ...ALL_INTERVAL_LESSONS];
+  const lesson = ALL_LESSONS.find((l) => l.id === lessonId);
   const [pageIndex, setPageIndex] = useState(0);
 
   if (!lesson) {
@@ -313,8 +539,8 @@ export default function LessonScreen() {
   const isLast = pageIndex === lesson.pages.length - 1;
   const progress = (pageIndex + 1) / lesson.pages.length;
 
-  const currentIndex = NOTE_LESSONS.findIndex((l) => l.id === lessonId);
-  const nextLesson = NOTE_LESSONS[currentIndex + 1] ?? null;
+  const currentIndex = ALL_LESSONS.findIndex((l) => l.id === lessonId);
+  const nextLesson = ALL_LESSONS[currentIndex + 1] ?? null;
 
   const handleNext = () => { if (!isLast) setPageIndex((i) => i + 1); };
   const handlePrev = () => {

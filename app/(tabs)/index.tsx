@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, StatusBar, useColorScheme } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTheme, Spacing, Radius, type ColorTheme } from '../../src/theme';
 import { CONCEPTS } from '../../src/utils/musicTheory';
 import { NOTE_LESSONS } from '../../src/data/noteLessons';
+import { BASIC_INTERVAL_LESSONS, ALL_INTERVAL_LESSONS } from '../../src/data/intervalLessons';
+import { getAllMastery } from '../../src/store/masteryStore';
 
 export default function LearnScreen() {
   const colors = useTheme();
@@ -13,6 +15,19 @@ export default function LearnScreen() {
 
   const [expandedConcept, setExpandedConcept] = useState<string | null>('notes');
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+  const [unlockedConcepts, setUnlockedConcepts] = useState<string[]>(['notes', 'basic_intervals']);
+
+  const loadUnlocked = useCallback(async () => {
+    const mastery = await getAllMastery();
+    setUnlockedConcepts(
+      Object.values(mastery.concepts)
+        .filter((c) => c.unlocked)
+        .map((c) => c.conceptId)
+    );
+  }, []);
+
+  // Reload whenever the tab comes into focus
+  useFocusEffect(useCallback(() => { loadUnlocked(); }, [loadUnlocked]));
 
   return (
     <ScrollView
@@ -43,9 +58,13 @@ export default function LearnScreen() {
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Learn concepts</Text>
 
       {CONCEPTS.map((concept, idx) => {
-        const isUnlocked = idx === 0;
+        const isUnlocked = unlockedConcepts.includes(concept.id);
         const isExpanded = expandedConcept === concept.id;
-        const lessons = concept.id === 'notes' ? NOTE_LESSONS : [];
+        const lessons =
+          concept.id === 'notes'          ? NOTE_LESSONS :
+          concept.id === 'basic_intervals' ? BASIC_INTERVAL_LESSONS :
+          concept.id === 'all_intervals'   ? ALL_INTERVAL_LESSONS :
+          [];
 
         return (
           <Pressable
