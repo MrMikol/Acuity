@@ -67,12 +67,16 @@ function WaveformVisual({ color }: { color: string }) {
 
 function KeyboardVisual({ color, accentColor }: { color: string; accentColor: string }) {
   const whites = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  const blackOffsets = [1, 2, null, 4, 5, 6];
+  // Black key positions: index of the white key to the LEFT of each black key
+  // C#=between C(0) and D(1), D#=between D(1) and E(2), F#=between F(3) and G(4), G#=between G(4) and A(5), A#=between A(5) and B(6)
+  const blackAfterWhite = [0, 1, 3, 4, 5]; // white key index after which black key sits
   const keyW = 32;
   const keyH = 80;
   const gap = 3;
   const totalW = whites.length * (keyW + gap) - gap;
   const startX = (320 - totalW) / 2;
+  const blackW = keyW * 0.6;
+  const blackH = keyH * 0.6;
 
   return (
     <Svg width={320} height={110} viewBox="0 0 320 110">
@@ -88,19 +92,20 @@ function KeyboardVisual({ color, accentColor }: { color: string; accentColor: st
           opacity={note === 'C' ? 0.9 : 0.15}
         />
       ))}
-      {blackOffsets.map((pos, i) => {
-        if (pos === null) return null;
-        const x = startX + (pos - 0.5) * (keyW + gap) - (keyW * 0.55) / 2;
+      {blackAfterWhite.map((whiteIdx, i) => {
+        // Center black key in the gap between white key whiteIdx and whiteIdx+1
+        const leftEdge = startX + whiteIdx * (keyW + gap) + keyW;
+        const x = leftEdge + gap / 2 - blackW / 2;
         return (
           <Rect
             key={i}
             x={x}
             y={10}
-            width={keyW * 0.55}
-            height={keyH * 0.6}
+            width={blackW}
+            height={blackH}
             rx={3}
             fill={color}
-            opacity={0.7}
+            opacity={0.75}
           />
         );
       })}
@@ -595,7 +600,7 @@ export default function LessonScreen() {
       <LessonPageView page={page} colors={colors} styles={styles} onCta={handleCta} />
 
       {!isLast && (
-        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface }]}>
+        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface, paddingBottom: Math.max(insets.bottom, Spacing.lg) }]}>
           <Pressable
             style={[styles.backToMenuBtn, { borderColor: colors.border }]}
             onPress={() => router.back()}
@@ -616,7 +621,7 @@ export default function LessonScreen() {
       )}
 
       {isLast && page.type !== 'cta' && (
-        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface }]}>
+        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface, paddingBottom: Math.max(insets.bottom, Spacing.lg) }]}>
           <Pressable
             style={[styles.backToMenuBtn, { borderColor: colors.border }]}
             onPress={() => router.back()}
@@ -694,6 +699,7 @@ function createStyles(colors: ColorTheme) {
 
     pageContent: {
       paddingHorizontal: Spacing.xl,
+      paddingTop: Spacing.xl,
       paddingBottom: Spacing['3xl'],
     },
     visualContainer: {
@@ -751,8 +757,7 @@ function createStyles(colors: ColorTheme) {
     footer: {
       borderTopWidth: 1,
       paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.lg,
-      paddingBottom: Spacing.xl,
+      paddingTop: Spacing.lg,
       flexDirection: 'row',
       gap: Spacing.sm,
     },

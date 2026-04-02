@@ -2,11 +2,13 @@ import React from 'react';
 import { Pressable, Image } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/theme';
 
 export default function TabsLayout() {
   const router = useRouter();
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -17,9 +19,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
-          height: 64,
+          height: 56 + insets.bottom,
           paddingTop: 6,
-          paddingBottom: 8,
+          paddingBottom: insets.bottom || 8,
         },
         headerStyle: {
           backgroundColor: colors.background,
@@ -30,6 +32,7 @@ export default function TabsLayout() {
             style={{ width: 120, height: 28, resizeMode: 'contain' }}
           />
         ),
+        headerTitleAlign: 'center',
         headerShadowVisible: false,
         sceneStyle: {
           backgroundColor: colors.surface,
